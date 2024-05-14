@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { categories } from "../_examples";
+import { categories as localCategories } from "../_examples";
 import { Category, SubmitResult, Word } from "../_types";
 import { delay, shuffleArray } from "../_utils";
 
 export default function useGameLogic() {
+  const [categories, setCategories] = useState<Category[]>([]);
   const [gameWords, setGameWords] = useState<Word[]>([]);
   const selectedWords = useMemo(
     () => gameWords.filter((item) => item.selected),
@@ -16,13 +17,27 @@ export default function useGameLogic() {
   const guessHistoryRef = useRef<Word[][]>([]);
 
   useEffect(() => {
-    const words: Word[] = categories
-      .map((category) =>
-        category.items.map((word) => ({ word: word, level: category.level }))
-      )
-      .flat();
-    setGameWords(shuffleArray(words));
+    getLocalCategories().then((categories) => {
+      setCategories(categories);
+
+      const words: Word[] = categories
+        .map((category) =>
+          category.words.map((word) => ({ word: word, level: category.level }))
+        )
+        .flat();
+      setGameWords(shuffleArray(words));
+    });
   }, []);
+
+  const getLocalCategories = (): Promise<Category[]> => {
+    const promise: Promise<Category[]> = new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve(localCategories);
+      }, 300);
+    });
+
+    return promise;
+  };
 
   const selectWord = (word: Word): void => {
     const newGameWords = gameWords.map((item) => {
@@ -65,7 +80,7 @@ export default function useGameLogic() {
     guessHistoryRef.current.push(selectedWords);
 
     const likenessCounts = categories.map((category) => {
-      return selectedWords.filter((item) => category.items.includes(item.word))
+      return selectedWords.filter((item) => category.words.includes(item.word))
         .length;
     });
 
@@ -82,7 +97,7 @@ export default function useGameLogic() {
   const getCorrectResult = (category: Category): SubmitResult => {
     setClearedCategories([...clearedCategories, category]);
     setGameWords(
-      gameWords.filter((item) => !category.items.includes(item.word))
+      gameWords.filter((item) => !category.words.includes(item.word))
     );
 
     if (clearedCategories.length === 3) {
@@ -118,7 +133,7 @@ export default function useGameLogic() {
         category,
       ]);
       setGameWords((prevGameWords) =>
-        prevGameWords.filter((item) => !category.items.includes(item.word))
+        prevGameWords.filter((item) => !category.words.includes(item.word))
       );
     }
 

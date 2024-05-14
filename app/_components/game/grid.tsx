@@ -1,4 +1,4 @@
-import { CellAnimationState, Category, Word } from "@/app/_types";
+import { Category, CellAnimationState, Word } from "@/app/_types";
 import Cell from "./cell";
 import ClearedCategory from "./cleared-category";
 
@@ -15,7 +15,7 @@ export default function Grid(props: GridProps) {
   return (
     <div className="grid grid-cols-4 gap-2 w-full">
       {props.clearedCategories.map((category) => (
-        <ClearedCategory key={category.category} category={category} />
+        <ClearedCategory key={category.pattern} category={category} />
       ))}
       {props.words.map((item) => (
         <Cell

@@ -1,6 +1,6 @@
 export type Category = {
-  category: string;
-  items: string[];
+  pattern: string;
+  words: string[];
   level: 1 | 2 | 3 | 4;
 };
 
