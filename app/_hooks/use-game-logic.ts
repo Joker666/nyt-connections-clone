@@ -39,6 +39,46 @@ export default function useGameLogic() {
     return promise;
   };
 
+  const getAICategories = (): Promise<Category[]> => {
+    return fetch("http://localhost:1234/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messages: [
+          {
+            role: "system",
+            content:
+              "Always answer in JSON format only. Skip any text before the JSON, like sure here are more patterns.",
+          },
+          {
+            role: "user",
+            content:
+              'Below, each JSON line has a pattern that the 4 words follow:\n\n[{"pattern":"Animal Groups","words":["colony","herd","pride","school"],"level":1},{"pattern":"Small Opening","words":["cranny","niche","nook","recess"],"level":2},{"pattern":"Paradigmatic","words":["classic","definitive","model","textbook"],"level":3},{"pattern":"Rhyming Compound Words","words":["backpack","bigwig","downtown","ragtag"],"level":4},{"pattern":"Cell Phone Modes","words":["focus","ring","silent","vibrate"],"level":5},{"pattern":"Romantic Beginnings","words":["connection","feelings","spark","vibe"],"level":6}]\n\nGenerate 4 more patterns and their associated 4 words similar to the above examples in JSON format. Do not reuse any of the examples. Only generate 4 patterns. Only return the examples in JSON format. Do not return anything besides the examples.',
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: -1,
+        stream: false,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        const choice = data.choices[0];
+        const content = choice.message.content;
+        console.log(content);
+        const categories: Category[] = JSON.parse(content);
+        console.log(categories);
+        return categories;
+      });
+  };
+
   const selectWord = (word: Word): void => {
     const newGameWords = gameWords.map((item) => {
       // Only allow word to be selected if there are less than 4 selected words
